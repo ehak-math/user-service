@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  user-service:
+    build: .
+    container_name: user-service
+    ports:
+      - "4001:4001"
+    env_file:
+      - .env
+    depends_on:
+      - mongo-user
+
+  mongo-user:
+    image: mongo:6
+    container_name: mongo-user
+    volumes:
+      - mongo-user-data:/data/db
+
+volumes:
+  mongo-user-data:
