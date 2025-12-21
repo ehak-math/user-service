@@ -6,12 +6,8 @@ services:
     container_name: user-service
     ports:
       - "4001:4001"
-    environment:
-      PORT: 4001
-      MONGODB_URI: mongodb://mongo-user:27017/userdb
-      JWT_SECRET: ${JWT_SECRET:-supersecret}
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-12h}
-      NODE_ENV: production
+    env_file:
+      - .env
     depends_on:
       mongo-user:
         condition: service_healthy  # Wait for healthcheck
