@@ -7,8 +7,14 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "lint": "eslint . ",
-    "test": "jest --runInBand"
+    "test": "jest --runInBand",
+    "test:coverage": "jest --coverage"
   },
+
+  "jest": {
+    "testEnvironment": "node"
+  },
+
   "keywords": [],
   "author": "",
   "license": "MIT",

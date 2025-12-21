@@ -1,17 +1,18 @@
-# Use official Node LTS
-FROM node:18
+FROM node:18-alpine
 
 WORKDIR /usr/src/app
 
-# copy package files first to leverage docker cache
+# Copy package files
 COPY package*.json ./
 
-# install deps
+# Install dependencies
 RUN npm ci --only=production
 
-# copy source
+# Copy source code (but NOT .env thanks to .dockerignore)
 COPY . .
 
+# Expose port
 EXPOSE 4001
 
+# Start app
 CMD ["node", "src/app.js"]
