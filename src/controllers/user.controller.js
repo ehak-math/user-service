@@ -1,6 +1,8 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { has: isBlacklisted } = require('./tokenBlacklist');
+const { add: blacklistToken } = require('./tokenBlacklist');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecret';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '12h';
@@ -93,25 +95,27 @@ async function getUser(req, res, next) {
 }
 
 
-// Verify token: used by other services (Booking) to check token validity
 async function verifyToken(req, res, next) {
   try {
     const authHeader = req.headers.authorization || '';
-    const token = (authHeader.startsWith('Bearer ') 
-      ? authHeader.split(' ')[1] 
+    const token = (authHeader.startsWith('Bearer ')
+      ? authHeader.split(' ')[1]
       : authHeader) || req.body.token;
-    
+
     if (!token) {
       return res.status(401).json({ error: 'token required' });
     }
 
+    // Check blacklist
+    if (isBlacklisted(token)) {
+      return res.status(401).json({ error: 'token has been logged out' });
+    }
+
     const payload = jwt.verify(token, JWT_SECRET);
-    
-    // Validate payload structure
     if (!payload.userId) {
       return res.status(401).json({ error: 'invalid token payload' });
     }
-    
+
     const user = await User.findById(payload.userId).select('-passwordHash');
     if (!user) {
       return res.status(401).json({ error: 'user not found' });
@@ -119,21 +123,40 @@ async function verifyToken(req, res, next) {
 
     return res.json({ valid: true, user });
   } catch (err) {
-    // JWT-specific errors
     if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
-      return res.status(401).json({ 
+      return res.status(401).json({
         error: 'invalid token',
-        reason: err.message 
+        reason: err.message
       });
     }
     next(err);
   }
 }
 
+async function logout(req, res, next) {
+  try {
+    const authHeader = req.headers.authorization || '';
+    const token = (authHeader.startsWith('Bearer ')
+      ? authHeader.split(' ')[1]
+      : authHeader) || req.body.token;
+
+    if (!token) {
+      return res.status(400).json({ error: 'token required to logout' });
+    }
+
+    blacklistToken(token);
+    return res.json({ success: true, message: 'logged out successfully' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+
 
 module.exports = {
   register,
   login,
   getUser,
-  verifyToken
+  verifyToken,
+  logout
 };
