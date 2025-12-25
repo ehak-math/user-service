@@ -2,7 +2,7 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const app = require('./server');
 
-const MONGO = process.env.MONGO_URI || 'mongodb+srv://ehakmath_db_user:XiTDdPqcVQfCMare@cluster0.mn0drdj.mongodb.net/user_service?appName=Cluster0';
+const MONGO = process.env.MONGO_URI || 'mongodb://mongo-user:27017/userdb';
 const PORT = process.env.PORT || 4001;
 
 
