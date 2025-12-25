@@ -18,10 +18,18 @@ app.use('/users', userRoutes);
 // root health
 app.get('/', (req, res) => res.json({ service: 'user-service', status: 'ok' }));
 
-// error handler (simple)
-app.use((err, req, res,) => {
+// Favicon requests
+app.get('/favicon.ico', (req, res) => res.sendStatus(204));
+
+// --- 404 handler for unknown routes ---
+app.use((req, res) => {
+  res.status(404).json({ error: 'Route not found' });
+});
+
+// --- Error handler ---
+app.use((err, req, res) => {
   console.error(err);
-  res.status(err.status || 500).json({ error: err.message || 'internal server error' });
+  res.status(err.status || 500).json({ error: err.message || 'Internal server error' });
 });
 
 module.exports = app;
